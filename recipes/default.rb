@@ -1,5 +1,4 @@
-
-group "admin" do
+group "conjurers" do
   gid 50000
 end
 
@@ -22,6 +21,16 @@ for pkg in %w(debconf nss-updatedb nscd libpam-mkhomedir auth-client-config ldap
   package pkg do
     options "-qq"
   end
+end
+
+ruby_block "Enable DEBUG logging for sshd" do
+  block do
+    edit = Chef::Util::FileEdit.new('/etc/ssh/sshd_config')
+    edit.search_file_replace_line "LogLevel INFO", "LogLevel DEBUG"
+    edit.write_file
+  end
+  not_if { File.read('/etc/ssh/sshd_config').index('LogLevel DEBUG') }
+  notifies :restart, "service[ssh]"
 end
 
 for s in %w(nscd nslcd)
@@ -50,4 +59,8 @@ end
 execute "pam-auth-update" do
   command "pam-auth-update --package"
   notifies :restart, [ "service[nscd]", "service[nslcd]" ]
+end
+
+cookbook_file "/etc/sudoers.d/conjurers" do
+  source "sudoers.d_conjurers"
 end
