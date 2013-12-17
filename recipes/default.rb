@@ -33,6 +33,18 @@ ruby_block "Enable DEBUG logging for sshd" do
   notifies :restart, "service[ssh]"
 end
 
+# Need this because there's not going to be a homedir the first time we 
+# login
+ruby_block "Tell sshd not to print the last login" do
+  block do 
+    edit = Chef::Util::FileEdit.new '/etc/ssh/sshd_config'
+    edit.search_file_replace_line "PrintLastLog yes", "PrintLastLog no"
+    edit.write_file
+  end
+  not_if{ File.read('/etc/ssh/sshd_config').index 'PrintLastLog no' }
+  notifies :restart, "service[ssh]" 
+end
+
 for s in %w(nscd nslcd)
   service s
 end
