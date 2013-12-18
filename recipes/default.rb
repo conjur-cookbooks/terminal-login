@@ -34,7 +34,7 @@ ruby_block "Enable DEBUG logging for sshd" do
 end
 
 # Need this because there's not going to be a homedir the first time we 
-# login
+# login.  Without this the first attempt to ssh to the host will fail.
 ruby_block "Tell sshd not to print the last login" do
   block do 
     edit = Chef::Util::FileEdit.new '/etc/ssh/sshd_config'
@@ -45,16 +45,12 @@ ruby_block "Tell sshd not to print the last login" do
   notifies :restart, "service[ssh]" 
 end
 
-for s in %w(nscd nslcd)
-  service s
-end
+%w(nscd nslcd).each{ |s| service s }
 
 # https://github.com/AndreyChernyh/openssh/commit/ee011fdda086547c876bceff79f63d751d0893b9
 ssh_service_provider = Chef::Provider::Service::Upstart if 'ubuntu' == node['platform'] && Chef::VersionConstraint.new('>= 13.10').include?(node['platform_version'])
 
-service "ssh" do
-  provider ssh_service_provider
-end
+service("ssh") { provider ssh_service_provider }
 
 layer_env = node.conjur.layer_env
 config = JSON.parse(File.read('/vagrant/conjur.json'))
