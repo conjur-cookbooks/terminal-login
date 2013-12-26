@@ -30,23 +30,8 @@ ssh_service_provider = Chef::Provider::Service::Upstart if 'ubuntu' == node['pla
 
 service("ssh") { provider ssh_service_provider }
 
-layer_env = node.conjur.layer_env
-config = JSON.parse(File.read('/vagrant/conjur.json'))
-namespace = config['namespace']
-hostid = "#{namespace}/#{layer_env}/hosts/0"
-host_api_key = config["api_keys"]["sandbox:host:#{hostid}"]
-
-template "/etc/nslcd.conf" do
-  source "nslcd.conf.erb"
-  variables hostid: hostid, host_api_key: host_api_key
-  notifies :restart, [ "service[nscd]", "service[nslcd]" ]
-end
 
 execute "pam-auth-update" do
   command "pam-auth-update --package"
-  notifies :restart, [ "service[nscd]", "service[nslcd]" ]
-end
-
-cookbook_file "/etc/sudoers.d/conjurers" do
-  source "sudoers.d_conjurers"
+  %w(nscd nslcd).each{ |s| notifies :restart, "service[#{s}]" }
 end
