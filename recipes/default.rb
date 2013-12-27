@@ -17,7 +17,7 @@ layer_env = node.conjur.layer_env
 config = JSON.parse(File.read('/vagrant/conjur.json'))
 namespace = config['namespace']
 hostid = "#{namespace}/#{layer_env}/hosts/0"
-host_api_key = config["api_keys"]["sandbox:host:#{hostid}"]
+host_api_key = config["api_keys"]["#{config['account']}:host:#{hostid}"]
 
 template "/etc/nslcd.conf" do
   source "nslcd.conf.erb"
@@ -32,7 +32,7 @@ ruby_block "Enable DEBUG logging for sshd" do
     edit.write_file
   end
   not_if { File.read('/etc/ssh/sshd_config').index('LogLevel DEBUG') }
-  notifies :restart, "service[#{node['openssh']['service_name']}]"
+  notifies :restart, "service[#{node.sshd.service}]"
 end
 
 # Need this because there's not going to be a homedir the first time we 
@@ -44,5 +44,5 @@ ruby_block "Tell sshd not to print the last login" do
     edit.write_file
   end
   not_if{ File.read('/etc/ssh/sshd_config').index 'PrintLastLog no' }
-  notifies :restart, "service[#{node['openssh']['service_name']}]"
+  notifies :restart, "service[#{node.sshd.service}]"
 end

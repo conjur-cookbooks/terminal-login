@@ -4,6 +4,11 @@
   end
 end
 
+# CentOS requires this, apparently
+group "nslcd" do
+  gid 3333
+end
+
 %w(nscd nslcd).each do |svc|
   service svc do
     supports :restart => true
