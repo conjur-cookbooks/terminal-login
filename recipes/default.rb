@@ -1,7 +1,7 @@
 case node[:platform]
-  when 'ubuntu', 'fedora', 'debian' 
+  when 'ubuntu', 'debian' 
     include_recipe 'pam-ldap::ubuntu'
-  when 'centos', 'redhat', 'fedora'
+  when 'centos', 'redhat'
     include_recipe 'pam-ldap::centos'
   else
     raise "unsupported platform: #{node[:platform]}"
@@ -18,10 +18,15 @@ config = JSON.parse(File.read('/vagrant/conjur.json'))
 namespace = config['namespace']
 hostid = "#{namespace}/#{layer_env}/hosts/0"
 host_api_key = config["api_keys"]["#{config['account']}:host:#{hostid}"]
-
+uri = 
 template "/etc/nslcd.conf" do
   source "nslcd.conf.erb"
-  variables hostid: hostid, host_api_key: host_api_key
+  gid = case node[:platform]
+    when 'ubuntu', 'debian' then 'nslcd'
+    when 'centos', 'redhat' then 'ldap'
+    else raise "Unsupported platform: #{node[:platform]}"
+  end
+  variables hostid: hostid, host_api_key: host_api_key, gid: gid, uri: 'uri'
   %w(nscd nslcd).each{ |s| notifies :restart, "service[#{s}]" }
 end
 
@@ -31,7 +36,8 @@ ruby_block "Enable DEBUG logging for sshd" do
     edit.search_file_replace_line "LogLevel INFO", "LogLevel DEBUG"
     edit.write_file
   end
-  not_if { File.read('/etc/ssh/sshd_config').index('LogLevel DEBUG') }
+  # Ommitting flakey/brittle not_if 
+  # not_if { File.read('/etc/ssh/sshd_config').index('LogLevel DEBUG') }
   notifies :restart, "service[#{node.sshd.service}]"
 end
 
@@ -43,6 +49,9 @@ ruby_block "Tell sshd not to print the last login" do
     edit.search_file_replace_line "PrintLastLog yes", "PrintLastLog no"
     edit.write_file
   end
-  not_if{ File.read('/etc/ssh/sshd_config').index 'PrintLastLog no' }
+  # Ommiting flakey and brittle not_if
+  # not_if{ File.read('/etc/ssh/sshd_config').index 'PrintLastLog no' }
   notifies :restart, "service[#{node.sshd.service}]"
 end
+
+%w(nscd nslcd).each{|s| service s}

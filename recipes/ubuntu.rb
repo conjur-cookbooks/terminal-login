@@ -23,8 +23,6 @@ for pkg in %w(debconf nss-updatedb nscd libpam-mkhomedir auth-client-config ldap
   end
 end
 
-%w(nscd nslcd).each{ |s| service s }
-
 # https://github.com/AndreyChernyh/openssh/commit/ee011fdda086547c876bceff79f63d751d0893b9
 ssh_service_provider = Chef::Provider::Service::Upstart if 'ubuntu' == node['platform'] && Chef::VersionConstraint.new('>= 13.10').include?(node['platform_version'])
 
