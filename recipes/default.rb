@@ -1,32 +1,28 @@
 include_recipe "sshd-service"
 
+# This is used to cURL the public keys service
+package "curl"
+
 %w(nscd nslcd).each{|s| service s}
 
 remote_directory '/var/chef'
 
-group "conjurers" do
+group node['conjur']['terminal_login']['groupnames']['conjurers'] do
   gid 50000
 end
 
-group "users" do
+group node['conjur']['terminal_login']['groupnames']['users'] do
   gid 5000
 end
 
 case node[:platform]
   when 'ubuntu', 'debian' 
-    include_recipe 'pam-ldap::ubuntu'
+    include_recipe 'terminal-login::ubuntu'
   when 'centos', 'redhat'
-    include_recipe 'pam-ldap::centos'
+    include_recipe 'terminal-login::centos'
   else
     raise "unsupported platform: #{node[:platform]}"
 end
-
-# Set up sudoers
-cookbook_file "/etc/sudoers.d/conjurers" do
-  source "sudoers.d_conjurers"
-end
-
-package "curl"
 
 ruby_block "Enable DEBUG logging for sshd" do
   block do
