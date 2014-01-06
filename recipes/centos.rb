@@ -5,6 +5,6 @@
 end
 
 execute "authconfig" do
-  command "authconfig --enablecache --enableldap --enableldapauth --enablemkhomedir --updateall"
+  command "authconfig --enablecache --enableldap --disableldapauth --enablemkhomedir --updateall"
   notifies :restart, "service[nslcd]"
 end
