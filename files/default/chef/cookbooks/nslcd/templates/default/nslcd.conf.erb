@@ -7,16 +7,16 @@ uid nslcd
 gid <%= @gid %>
 
 # The location at which the LDAP server(s) should be reachable.
-uri ldap://ldap.conjur.ws:1389
+uri <%= @uri %>
 
 # The search base that will be used for all queries.
-base   ou=user,host=<%= @hostid %>,account=sandbox,o=conjur
+base   ou=user,host=<%= @host_id %>,account=<%= @account %>,o=conjur
 
 # The LDAP protocol version to use.
 # ldap_version 3
 
 # The DN to bind with for normal lookups.
-binddn uid=<%= @hostid %>,ou=host,host=<%= @hostid %>,account=sandbox,o=conjur
+binddn uid=<%= @host_id %>,ou=host,host=<%= @host_id %>,account=<%= @account %>,o=conjur
 bindpw <%= @host_api_key %>
 
 # The DN used for password modifications by root.

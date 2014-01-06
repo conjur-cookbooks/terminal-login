@@ -1,1 +1,1 @@
-conjurers ALL=(ALL) NOPASSWD:ALL
+%conjurers ALL=(ALL) NOPASSWD:ALL

@@ -1,5 +1,7 @@
 include_recipe "sshd-service"
 
+%w(nscd nslcd).each{|s| service s}
+
 remote_directory '/var/chef'
 
 group "conjurers" do
@@ -45,8 +47,6 @@ ruby_block "Enable DEBUG logging for sshd" do
     edit.search_file_replace_line "LogLevel INFO", "LogLevel DEBUG"
     edit.write_file
   end
-  # Ommitting flakey/brittle not_if 
-  # not_if { File.read('/etc/ssh/sshd_config').index('LogLevel DEBUG') }
   notifies :restart, "service[#{node.sshd_service.service}]"
 end
 
@@ -58,9 +58,33 @@ ruby_block "Tell sshd not to print the last login" do
     edit.search_file_replace_line "PrintLastLog yes", "PrintLastLog no"
     edit.write_file
   end
-  # Ommiting flakey and brittle not_if
-  # not_if{ File.read('/etc/ssh/sshd_config').index 'PrintLastLog no' }
   notifies :restart, "service[#{node.sshd_service.service}]"
 end
 
-%w(nscd nslcd).each{|s| service s}
+ssh_version = `ssh -v 2>&1`.split("\n")[0]
+raise "Can't detect ssh version" unless ssh_version && ssh_version =~ /OpenSSH_([\d\.]+)/
+ssh_version = $1
+
+run_as_option = case ssh_version
+  when '6.0'
+    'AuthorizedKeysCommandRunAs'
+  else
+    'AuthorizedKeysCommandUser'
+end
+
+ruby_block "Configure sshd with AuthorizedKeysCommand" do
+  block do
+    edit = Chef::Util::FileEdit.new('/etc/ssh/sshd_config')
+    
+    edit.insert_line_after_match(/#?AuthorizedKeysFile/, <<-CMD)
+AuthorizedKeysCommand /root/authorized_keys.sh
+#{run_as_option} root
+    CMD
+    edit.write_file
+    Chef::Log.info "Wrote AuthorizedKeysCommand into sshd_config"
+  end
+  # Need this so the lines don't get inserted multiple times
+  not_if { File.read('/etc/ssh/sshd_config').index('AuthorizedKeysCommand /root/authorized_keys.sh') }
+  notifies :restart, "service[#{node.sshd_service.service}]"
+end
+
