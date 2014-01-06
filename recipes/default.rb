@@ -1,3 +1,5 @@
+include_recipe "sshd-service"
+
 remote_directory '/var/chef'
 
 group "conjurers" do
@@ -25,11 +27,6 @@ for pkg in %w(debconf nss-updatedb nscd libpam-mkhomedir auth-client-config ldap
   end
 end
 
-# https://github.com/AndreyChernyh/openssh/commit/ee011fdda086547c876bceff79f63d751d0893b9
-ssh_service_provider = Chef::Provider::Service::Upstart if 'ubuntu' == node['platform'] && Chef::VersionConstraint.new('>= 13.10').include?(node['platform_version'])
-
-service("ssh") { provider ssh_service_provider }
-
 execute "pam-auth-update" do
   command "pam-auth-update --package"
   %w(nscd nslcd).each{ |s| notifies :restart, "service[#{s}]" }
@@ -41,7 +38,6 @@ cookbook_file "/etc/sudoers.d/conjurers" do
 end
 
 package "curl"
-include_recipe "sshd"
 
 ruby_block "Enable DEBUG logging for sshd" do
   block do
@@ -51,7 +47,7 @@ ruby_block "Enable DEBUG logging for sshd" do
   end
   # Ommitting flakey/brittle not_if 
   # not_if { File.read('/etc/ssh/sshd_config').index('LogLevel DEBUG') }
-  notifies :restart, "service[ssh]"
+  notifies :restart, "service[#{node.sshd_service.service}]"
 end
 
 # Need this because there's not going to be a homedir the first time we 
@@ -64,7 +60,7 @@ ruby_block "Tell sshd not to print the last login" do
   end
   # Ommiting flakey and brittle not_if
   # not_if{ File.read('/etc/ssh/sshd_config').index 'PrintLastLog no' }
-  notifies :restart, "service[ssh]"
+  notifies :restart, "service[#{node.sshd_service.service}]"
 end
 
 %w(nscd nslcd).each{|s| service s}
