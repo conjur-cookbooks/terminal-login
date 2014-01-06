@@ -1,3 +1,11 @@
+group "conjurers" do
+  gid 50000
+end
+
+group "users" do
+  gid 5000
+end
+
 case node[:platform]
   when 'ubuntu', 'debian' 
     include_recipe 'pam-ldap::ubuntu'

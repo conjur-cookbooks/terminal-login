@@ -1,11 +1,3 @@
-group "conjurers" do
-  gid 50000
-end
-
-group "users" do
-  gid 5000
-end
-
 # Answer the installer questions about LDAP server location, root name, etc
 cookbook_file "/tmp/ldap.seed" do
   source "ldap.seed"
