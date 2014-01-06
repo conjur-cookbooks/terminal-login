@@ -4,10 +4,8 @@
   end
 end
 
-host_id = data_bag_item('conjur', 'host')['host_id']
-host_api_key = data_bag_item('conjur', 'host')['host_api_key']
-account = data_bag_item('conjur', 'host')['account']
-stack = data_bag_item('conjur', 'host')['stack']
+account = node.conjur.account
+stack = node.conjur.stack
 uri = case stack
 when 'ci'
   'ldap://ldap-server-1050080273.us-east-1.elb.amazonaws.com:1389'
@@ -22,7 +20,7 @@ template "/etc/nslcd.conf" do
     when 'centos', 'redhat' then 'ldap'
     else raise "Unsupported platform: #{node[:platform]}"
   end
-  variables account: account, host_id: host_id, host_api_key: host_api_key, gid: gid, uri: uri
+  variables account: account, host_id: node.conjur.host_identity.id, host_api_key: node.conjur.host_identity.api_key, gid: gid, uri: uri
   %w(nscd nslcd).each{ |s| notifies :restart, "service[#{s}]" }
 end
 
