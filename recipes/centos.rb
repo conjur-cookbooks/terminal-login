@@ -1,4 +1,4 @@
-%w(nscd openldap openldap-clients nss-pam-ldapd authconfig).each do |pkg|
+%w(nscd openldap openldap-clients nss-pam-ldapd authconfig openssl-perl).each do |pkg|
   package pkg do
     options '-y'
   end

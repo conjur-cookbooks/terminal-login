@@ -7,6 +7,12 @@ package "curl"
 
 remote_directory '/var/chef'
 
+directory '/etc/chef'
+cookbook_file 'chef-solo.json' do
+  path '/etc/chef/solo.json.example'
+  action :create_if_missing
+end
+
 group node['conjur']['terminal_login']['groupnames']['conjurers'] do
   gid 50000
 end
@@ -49,7 +55,7 @@ raise "Can't detect ssh version" unless ssh_version && ssh_version =~ /OpenSSH_(
 ssh_version = $1
 
 run_as_option = case ssh_version
-  when '6.0'
+  when /^5\./, '6.0'
     'AuthorizedKeysCommandRunAs'
   else
     'AuthorizedKeysCommandUser'

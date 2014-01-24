@@ -1,0 +1,9 @@
+{
+  "conjur": {
+    "account": null,
+    "hostname": null
+  },
+  "run_list": [
+    "recipe[conjur::configure]"
+  ]
+}
