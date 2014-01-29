@@ -1,7 +1,7 @@
 require 'chefspec'
 require "#{File.dirname(File.dirname(__FILE__))}/libraries/conjur_terminal_login"
 
-describe "conjur-terminal-login::default" do
+describe "terminal-login::configure" do
   let(:attributes) { 
     {
       'conjur' => {

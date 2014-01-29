@@ -5,14 +5,6 @@ package "curl"
 
 %w(nscd nslcd).each{|s| service s}
 
-remote_directory '/var/chef'
-
-directory '/etc/chef'
-cookbook_file 'chef-solo.json' do
-  path '/etc/chef/solo.json.example'
-  action :create_if_missing
-end
-
 group node['conjur']['terminal_login']['groupnames']['conjurers'] do
   gid 50000
 end
@@ -37,6 +29,7 @@ ruby_block "Enable DEBUG logging for sshd" do
     edit.write_file
   end
   notifies :restart, "service[#{node.sshd_service.service}]"
+  only_if { node.conjur.terminal_login['debug'] }
 end
 
 # Need this because there's not going to be a homedir the first time we 
@@ -76,4 +69,3 @@ AuthorizedKeysCommand /root/authorized_keys.sh
   not_if { File.read('/etc/ssh/sshd_config').index('AuthorizedKeysCommand /root/authorized_keys.sh') }
   notifies :restart, "service[#{node.sshd_service.service}]"
 end
-
