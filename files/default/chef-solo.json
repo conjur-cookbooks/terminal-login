@@ -4,6 +4,6 @@
     "hostname": null
   },
   "run_list": [
-    "recipe[conjur::configure]"
+    "recipe[conjur-terminal-login]"
   ]
 }

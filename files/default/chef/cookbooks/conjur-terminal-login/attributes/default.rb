@@ -4,6 +4,3 @@ when 'ci'
 else
   'ldap://ldap.conjur.ws:1389'
 end
-
-default['conjur']['terminal_login']['authorized_keys_command_url'] = "https://pubkeys-#{node['conjur']['account']}-conjur.herokuapp.com"
-default['conjur']['terminal_login']['ssl_certificate'] = nil
