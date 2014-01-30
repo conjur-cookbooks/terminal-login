@@ -46,9 +46,9 @@ end
 curl_options = []
 curl_options << "--cacert /opt/conjur/embedded/ssl/certs/conjur.pem" if cacertfile
 
-template "/root/authorized_keys.sh" do
-  source "authorized_keys.sh.erb"
+template "/usr/local/bin/conjur_authorized_keys" do
+  source "conjur_authorized_keys.sh.erb"
   variables uri: authorized_keys_command_url, options: curl_options.join(' ')
-  mode "0700"
+  mode "0755"
   %w(nscd nslcd).each{ |s| notifies :restart, "service[#{s}]" }
 end

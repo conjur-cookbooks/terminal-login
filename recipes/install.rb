@@ -54,18 +54,23 @@ run_as_option = case ssh_version
     'AuthorizedKeysCommandUser'
 end
 
+user "authkeylookup" do
+  system true
+  shell "/bin/false"
+end
+
 ruby_block "Configure sshd with AuthorizedKeysCommand" do
   block do
     edit = Chef::Util::FileEdit.new('/etc/ssh/sshd_config')
     
     edit.insert_line_after_match(/#?AuthorizedKeysFile/, <<-CMD)
-AuthorizedKeysCommand /root/authorized_keys.sh
-#{run_as_option} root
+AuthorizedKeysCommand /usr/local/bin/conjur_authorized_keys
+#{run_as_option} authkeylookup
     CMD
     edit.write_file
     Chef::Log.info "Wrote AuthorizedKeysCommand into sshd_config"
   end
   # Need this so the lines don't get inserted multiple times
-  not_if { File.read('/etc/ssh/sshd_config').index('AuthorizedKeysCommand /root/authorized_keys.sh') }
+  not_if { File.read('/etc/ssh/sshd_config').index('AuthorizedKeysCommand /usr/local/bin/conjur_authorized_keys') }
   notifies :restart, "service[#{node.sshd_service.service}]"
 end
