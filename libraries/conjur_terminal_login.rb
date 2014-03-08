@@ -12,11 +12,22 @@ module ConjurTerminalLogin
       conjur_conf['account']
     end
     
+    def stack
+      conjur_conf['stack'] || 'v4'
+    end
+    
     def ldap_url(node)
-      if appliance_url
-        ldap_url = "ldaps://#{URI.parse(appliance_url).host}"
+      if result = node['conjur']['configuration']['ldap_url']
+        result
+      elsif appliance_url
+        "ldaps://#{URI.parse(appliance_url).host}"
       else
-        node.conjur.terminal_login.ldap_url
+        case stack
+        when 'ci'
+          'ldap://ldap-server-1050080273.us-east-1.elb.amazonaws.com:1389'
+        else
+          'ldap://ldap.conjur.ws:1389'
+        end
       end
     end
     
