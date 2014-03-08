@@ -24,9 +24,9 @@ module ConjurTerminalLogin
       else
         case stack
         when 'ci'
-          'ldap://ldap-server-1050080273.us-east-1.elb.amazonaws.com:1389'
+          'ldap://ec2-54-83-52-194.compute-1.amazonaws.com'
         else
-          'ldap://ldap.conjur.ws:1389'
+          'ldap://ec2-174-129-243-206.compute-1.amazonaws.com'
         end
       end
     end
