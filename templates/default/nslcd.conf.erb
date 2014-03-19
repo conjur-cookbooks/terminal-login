@@ -13,6 +13,13 @@ gid  <%= @gid %>
 # The location at which the LDAP server(s) should be reachable.
 uri  <%= @uri %>
 
+<% if @platform=="centos" %> 
+# nslcd on CentOS tries to reuse LDAP connection forever, 
+# but requests start ending up with "unknown error" soon 
+# Regular enforced re-connection solves this issue
+idle_timelimit 60
+<% end %>
+
 # The search base that will be used for all queries.
 base ou=user,host=<%= @host_id %>,account=<%= @account %>,o=conjur
 
