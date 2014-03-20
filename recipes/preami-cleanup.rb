@@ -5,5 +5,11 @@
 directory "/root/.ssh" do
   action :delete
   recursive true
+  only_if { File.directory?("/root/.ssh") }
 end
 
+directory "/home/ubuntu/.ssh" do
+  action :delete
+  recursive true
+  only_if { File.directory?("/home/ubuntu/.ssh") }
+end
