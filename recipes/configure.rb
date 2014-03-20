@@ -34,9 +34,7 @@ template "/etc/nslcd.conf" do
     when 'centos', 'redhat' then 'ldap'
     else raise "Unsupported platform: #{node[:platform]}"
   end
-  variables 
-    platform: node[:platform],
-    account: account, 
+  variables account: account, 
     host_id: node.conjur.host_identity.id, 
     host_api_key: node.conjur.host_identity.api_key, 
     gid: gid, 
