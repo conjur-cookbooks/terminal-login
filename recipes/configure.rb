@@ -9,16 +9,21 @@ authorized_keys_command_url = ConjurTerminalLogin.authorized_keys_command_url(no
 ldap_url = ConjurTerminalLogin.ldap_url(node)
 
 if File.exists?("/opt/conjur/embedded/ssl/certs/conjur.pem")
-  cacertfile = "/etc/openldap/cacerts/conjur.pem"
-  file cacertfile do 
-    content File.read("/opt/conjur/embedded/ssl/certs/conjur.pem")
-    mode "0644"
-  end
+  cacertfile = "/opt/conjur/embedded/ssl/certs/conjur.pem"
 else
   cacertfile = nil
 end
 
-template "/etc/openldap/ldap.conf" do
+openldap_dir = case node[:platform_family]
+  when 'debian'
+    '/etc/ldap'
+  when 'rhel'
+    '/etc/openldap'
+  else 
+    raise "Unsupported platform family : #{node[:platform_family]}"
+end
+
+template "#{openldap_dir}/ldap.conf" do
   source "ldap.conf.erb"
   variables account: account,
     host_id: node.conjur.host_identity.id,
@@ -29,10 +34,13 @@ end
 
 template "/etc/nslcd.conf" do
   source "nslcd.conf.erb"
-  gid = case node[:platform]
-    when 'ubuntu', 'debian' then 'nslcd'
-    when 'centos', 'redhat' then 'ldap'
-    else raise "Unsupported platform: #{node[:platform]}"
+  gid = case node[:platform_family]
+    when 'debian'
+      'nslcd'
+    when 'rhel'
+      'ldap'
+    else 
+      raise "Unsupported platform family : #{node[:platform_family]}"
   end
   variables account: account, 
     host_id: node.conjur.host_identity.id, 

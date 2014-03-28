@@ -13,13 +13,17 @@ group node['conjur']['terminal_login']['groupnames']['users'] do
   gid 5000
 end
 
-case node[:platform]
-  when 'ubuntu', 'debian' 
-    include_recipe 'terminal-login::ubuntu'
-  when 'centos', 'redhat'
-    include_recipe 'terminal-login::centos'
-  else
-    raise "unsupported platform: #{node[:platform]}"
+case node[:platform_family]
+  when 'debian'
+    include_recipe 'terminal-login::install_debian'
+  when 'rhel'
+    include_recipe 'terminal-login::install_rhel'
+  else 
+    raise "Unsupported platform family : #{node[:platform_family]}"
+end
+
+if node[:platform] == "centos"
+  include_recipe 'terminal-login::install_selinux'
 end
 
 ruby_block "Enable DEBUG logging for sshd" do
