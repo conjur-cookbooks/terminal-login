@@ -1,5 +1,13 @@
 module ConjurTerminalLogin
-  class << self  
+  class << self
+    def cacertfile
+      if File.exists?("/opt/conjur/embedded/ssl/certs/conjur.pem")
+        "/opt/conjur/embedded/ssl/certs/conjur.pem"
+      else
+        nil
+      end
+    end
+    
     def authorized_keys_command_url(node)
       if appliance_url
         authorized_keys_command_url = [ appliance_url, "pubkeys" ].join('/')
@@ -41,5 +49,23 @@ module ConjurTerminalLogin
     def appliance_url
       conjur_conf['appliance_url']
     end
+  end
+end
+
+class Chef::Resource
+  def conjur_account
+    ConjurTerminalLogin.account
+  end
+
+  def authorized_keys_command_url
+    ConjurTerminalLogin.authorized_keys_command_url(node)
+  end
+
+  def ldap_url
+    ConjurTerminalLogin.ldap_url(node)
+  end
+  
+  def cacertfile
+    ConjurTerminalLogin.cacertfile
   end
 end

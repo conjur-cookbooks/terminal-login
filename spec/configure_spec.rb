@@ -1,4 +1,5 @@
 require 'chefspec'
+require 'spec_helper'
 require "#{File.dirname(File.dirname(__FILE__))}/libraries/conjur_terminal_login"
 
 describe "terminal-login::configure" do
@@ -17,7 +18,10 @@ describe "terminal-login::configure" do
       attributes.each do |k,v|
         node.override[k] = v
       end
-    end.converge(described_recipe) 
+    end
+  }
+  let(:subject) {
+    chef_run.converge(described_recipe)
   }
   let(:conjur_conf) {
     YAML.dump({
@@ -31,18 +35,20 @@ describe "terminal-login::configure" do
     File.stub(:exists?).and_call_original
     File.stub(:exists?).with("/opt/conjur/embedded/ssl/certs/conjur.pem").and_return false
   }
-  subject { chef_run }
   
   context "without SSL certificate or appliance_url" do
-    it "doesn't put the cert in openldap" do
-      subject.should_not create_file("/etc/openldap/cacerts/conjur.pem")
+    it "should use debian platform family" do
+      subject.node.platform_family.should == "debian"
     end
-    it "creates /etc/openldap/ldap.conf" do
-      subject.should create_template("/etc/openldap/ldap.conf").with(
+    it "doesn't put the cert in openldap" do
+      subject.should_not create_file("/etc/ldap/cacerts/conjur.pem")
+    end
+    it "creates /etc/ldap/ldap.conf" do
+      subject.should create_template("/etc/ldap/ldap.conf").with(
         variables: {
           account: 'test',
           host_id: "the-host", 
-          uri: "ldap://ldap.conjur.ws:1389", 
+          uri: "ldap://ec2-174-129-243-206.compute-1.amazonaws.com", 
           cacertfile: nil
         }
       )
@@ -54,13 +60,13 @@ describe "terminal-login::configure" do
           host_id: "the-host", 
           host_api_key: "the-host-api-key",
           gid: "nslcd",
-          uri: "ldap://ldap.conjur.ws:1389", 
+          uri: "ldap://ec2-174-129-243-206.compute-1.amazonaws.com", 
           cacertfile: nil
         }
       )
     end
-    it "creates /root/authorized_keys.sh" do
-      subject.should create_template("/root/authorized_keys.sh").with(
+    it "creates conjur_authorized_keys" do
+      subject.should create_template("/usr/local/bin/conjur_authorized_keys").with(
         variables: {
           uri: "https://pubkeys-test-conjur.herokuapp.com", 
           options: ""
@@ -73,18 +79,13 @@ describe "terminal-login::configure" do
       File.stub(:exists?).with("/opt/conjur/embedded/ssl/certs/conjur.pem").and_return true
       File.stub(:read).with("/opt/conjur/embedded/ssl/certs/conjur.pem").and_return "the-cert-content"
     }
-    it "creates LDAP certfile" do
-      subject.should create_file("/etc/openldap/cacerts/conjur.pem").with(
-        content: "the-cert-content"
-      )
-    end
-    it "creates /etc/openldap/ldap.conf" do
-      subject.should create_template("/etc/openldap/ldap.conf").with(
+    it "creates /etc/ldap/ldap.conf" do
+      subject.should create_template("/etc/ldap/ldap.conf").with(
         variables: {
           account: 'test',
           host_id: "the-host", 
-          uri: "ldap://ldap.conjur.ws:1389", 
-          cacertfile: "/etc/openldap/cacerts/conjur.pem"
+          uri: "ldap://ec2-174-129-243-206.compute-1.amazonaws.com", 
+          cacertfile: "/opt/conjur/embedded/ssl/certs/conjur.pem"
         }
       )
     end
@@ -95,13 +96,13 @@ describe "terminal-login::configure" do
           host_id: "the-host", 
           host_api_key: "the-host-api-key",
           gid: "nslcd",
-          uri: "ldap://ldap.conjur.ws:1389", 
-          cacertfile: "/etc/openldap/cacerts/conjur.pem"
+          uri: "ldap://ec2-174-129-243-206.compute-1.amazonaws.com", 
+          cacertfile: "/opt/conjur/embedded/ssl/certs/conjur.pem"
         }
       )
     end
-    it "creates /root/authorized_keys.sh" do
-      subject.should create_template("/root/authorized_keys.sh").with(
+    it "creates conjur_authorized_keys" do
+      subject.should create_template("/usr/local/bin/conjur_authorized_keys").with(
         variables: {
           uri: "https://pubkeys-test-conjur.herokuapp.com", 
           options: "--cacert /opt/conjur/embedded/ssl/certs/conjur.pem"
@@ -117,8 +118,8 @@ describe "terminal-login::configure" do
         "plugins" => %w(a b)
       })
     }
-    it "creates /etc/openldap/ldap.conf" do
-      subject.should create_template("/etc/openldap/ldap.conf").with(
+    it "creates /etc/ldap/ldap.conf" do
+      subject.should create_template("/etc/ldap/ldap.conf").with(
         variables: {
           account: 'test',
           host_id: "the-host", 
@@ -139,8 +140,8 @@ describe "terminal-login::configure" do
         }
       )
     end
-    it "creates /root/authorized_keys.sh" do
-      subject.should create_template("/root/authorized_keys.sh").with(
+    it "creates conjur_authorized_keys" do
+      subject.should create_template("/usr/local/bin/conjur_authorized_keys").with(
         variables: {
           uri: "https://conjur/api/pubkeys", 
           options: ""
