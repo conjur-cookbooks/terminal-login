@@ -1,7 +1,7 @@
 module ConjurTerminalLogin
   class << self
-    def cacertfile
-      if File.exists?("/opt/conjur/embedded/ssl/certs/conjur.pem")
+    def cacertfile(node)
+      if node['conjur']['ssl_certificate'] || File.exists?("/opt/conjur/embedded/ssl/certs/conjur.pem")
         "/opt/conjur/embedded/ssl/certs/conjur.pem"
       else
         nil
@@ -66,6 +66,6 @@ class Chef::Resource
   end
   
   def cacertfile
-    ConjurTerminalLogin.cacertfile
+    ConjurTerminalLogin.cacertfile(node)
   end
 end
