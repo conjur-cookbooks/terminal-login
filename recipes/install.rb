@@ -47,7 +47,7 @@ ruby_block "Tell sshd not to print the last login" do
   notifies :restart, "service[#{node.sshd_service.service}]"
 end
 
-ssh_version = `ssh -v 2>&1`.split("\n")[0]
+ssh_version = `ssh -V 2>&1`.split("\n")[0]
 raise "Can't detect ssh version" unless ssh_version && ssh_version =~ /OpenSSH_([\d\.]+)/
 ssh_version = $1
 
