@@ -47,17 +47,6 @@ ruby_block "Tell sshd not to print the last login" do
   notifies :restart, "service[#{node.sshd_service.service}]"
 end
 
-ssh_version = `ssh -V 2>&1`.split("\n")[0]
-raise "Can't detect ssh version" unless ssh_version && ssh_version =~ /OpenSSH_([\d\.]+)/
-ssh_version = $1
-
-run_as_option = case ssh_version
-  when /^5\./, '6.0'
-    'AuthorizedKeysCommandRunAs'
-  else
-    'AuthorizedKeysCommandUser'
-end
-
 user "authkeylookup" do
   system true
   shell "/bin/false"
@@ -65,6 +54,17 @@ end
 
 ruby_block "Configure sshd with AuthorizedKeysCommand" do
   block do
+    ssh_version = `ssh -V 2>&1`.split("\n")[0]
+    raise "Can't detect ssh version" unless ssh_version && ssh_version =~ /OpenSSH_([\d\.]+)/
+    ssh_version = $1
+
+    run_as_option = case ssh_version
+      when /^5\./, '6.0'
+        'AuthorizedKeysCommandRunAs'
+      else
+        'AuthorizedKeysCommandUser'
+    end
+
     edit = Chef::Util::FileEdit.new('/etc/ssh/sshd_config')
     
     edit.insert_line_after_match(/#?AuthorizedKeysFile/, <<-CMD)
