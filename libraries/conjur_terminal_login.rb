@@ -1,8 +1,10 @@
 module ConjurTerminalLogin
   class << self
     def cacertfile(node)
-      if node['conjur']['ssl_certificate'] || File.exists?("/opt/conjur/embedded/ssl/certs/conjur.pem")
+      if (node['conjur'] && node['conjur']['ssl_certificate']) || File.exists?("/opt/conjur/embedded/ssl/certs/conjur.pem")
         "/opt/conjur/embedded/ssl/certs/conjur.pem"
+      elsif cert_file = conjur_conf['cert_file']
+        File.expand_path(cert_file, "/etc/")
       else
         nil
       end
@@ -24,6 +26,25 @@ module ConjurTerminalLogin
       conjur_conf['stack'] || 'v4'
     end
     
+    def host_id(node)
+      begin
+        node.conjur.host_identity.id
+      rescue NoMethodError
+        id = netrc[0] or raise "No host identity found in attributes or netrc"
+        tokens = id.split('/')
+        raise "Expecting host id in netrc" unless tokens[0] == 'host'
+        tokens[1..-1].join('/')
+      end
+    end
+    
+    def host_api_key(node)
+      begin
+        node.conjur.host_identity.api_key
+      rescue NoMethodError
+        netrc[1] or raise "No host api key found in attributes or netrc"
+      end
+    end
+    
     def ldap_url(node)
       if result = node['conjur']['configuration']['ldap_url']
         result
@@ -41,6 +62,12 @@ module ConjurTerminalLogin
     
     protected
     
+    def netrc
+      require 'netrc'
+      netrc = Netrc.read('/root/.netrc')
+      netrc["#{appliance_url}/authn"] || []
+    end
+    
     def conjur_conf
       require 'yaml'
       YAML.load(File.read("/etc/conjur.conf"))
@@ -55,6 +82,14 @@ end
 class Chef::Resource
   def conjur_account
     ConjurTerminalLogin.account
+  end
+  
+  def host_id
+    ConjurTerminalLogin.host_id(node)
+  end
+
+  def host_api_key
+    ConjurTerminalLogin.host_api_key(node)
   end
 
   def authorized_keys_command_url

@@ -1,3 +1,5 @@
+chef_gem 'netrc'
+
 %w(nscd nslcd).each do |s| 
   service s do
     action :enable
@@ -16,7 +18,7 @@ end
 template "#{openldap_dir}/ldap.conf" do
   source "ldap.conf.erb"
   variables account: conjur_account,
-    host_id: node.conjur.host_identity.id,
+    host_id: host_id,
     uri: ldap_url,
     cacertfile: cacertfile
   mode "0644"
@@ -33,8 +35,8 @@ template "/etc/nslcd.conf" do
       raise "Unsupported platform family : #{node[:platform_family]}"
   end
   variables account: conjur_account, 
-    host_id: node.conjur.host_identity.id, 
-    host_api_key: node.conjur.host_identity.api_key, 
+    host_id: host_id, 
+    host_api_key: host_api_key, 
     gid: gid, 
     uri: ldap_url,
     cacertfile: cacertfile
@@ -43,7 +45,7 @@ end
 
 template "/usr/local/bin/conjur_authorized_keys" do
   curl_options = []
-  curl_options << "--cacert /opt/conjur/embedded/ssl/certs/conjur.pem" if cacertfile
+  curl_options << "--cacert #{cacertfile}" if cacertfile
   
   source "conjur_authorized_keys.sh.erb"
   variables uri: authorized_keys_command_url, options: curl_options.join(' ')
