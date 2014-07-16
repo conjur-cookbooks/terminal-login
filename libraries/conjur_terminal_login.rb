@@ -59,7 +59,11 @@ module ConjurTerminalLogin
         end
       end
     end
-    
+
+    def appliance_url
+      conjur_conf['appliance_url']
+    end
+
     protected
     
     def netrc
@@ -72,16 +76,16 @@ module ConjurTerminalLogin
       require 'yaml'
       YAML.load(File.read("/etc/conjur.conf"))
     end
-    
-    def appliance_url
-      conjur_conf['appliance_url']
-    end
   end
 end
 
 class Chef::Resource
   def conjur_account
     ConjurTerminalLogin.account
+  end
+
+  def appliance_url
+    ConjurTerminalLogin.appliance_url
   end
   
   def host_id
