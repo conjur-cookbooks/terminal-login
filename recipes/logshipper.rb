@@ -4,12 +4,9 @@ require 'yaml'
 
 apt_repository 'conjur' do
   uri 'http://apt.conjur.s3-website-us-east-1.amazonaws.com'
-  components %w(universe multiverse)
+  components %w(main)
   distribution node['lsb']['codename']
-  # TODO: disable 'trusted' and provide explicit auth key information
-  trusted true
-  #keyserver "..."
-  #key "..."
+  key "apt.key"
 end
 
 package 'logshipper'
