@@ -6,6 +6,10 @@ apt_repository 'conjur' do
   uri 'http://apt.conjur.s3-website-us-east-1.amazonaws.com'
   components %w(universe multiverse)
   distribution node['lsb']['codename']
+  # TODO: disable 'trusted' and provide explicit auth key information
+  trusted true
+  #keyserver "..."
+  #key "..."
 end
 
 package 'logshipper'
