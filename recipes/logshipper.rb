@@ -38,7 +38,7 @@ bash "mkfifo #{fifo_path}" do
 
   code """
     rm -f #{fifo_path}
-    mkfifo --mode=0420 #{fifo_path}
+    mkfifo --mode=0460 #{fifo_path}
     chown logshipper:syslog #{fifo_path}
   """
 end
