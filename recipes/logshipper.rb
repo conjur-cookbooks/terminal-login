@@ -45,6 +45,7 @@ end
 
 file "/var/log/logshipper.log" do
   owner 'logshipper'
+  mode '0640'
 end
 
 ## conjur identity
