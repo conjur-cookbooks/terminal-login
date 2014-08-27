@@ -1,4 +1,6 @@
-site :opscode
+source "https://api.berkshelf.com"
+
+metadata
 
 cookbook "apt"
 cookbook "conjur-client", git: "git@github.com:conjur-cookbooks/conjur-client.git"

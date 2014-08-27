@@ -12,6 +12,7 @@ recipe "terminal-login::sudoers", "Gives passwordless sudo to conjurers"
 depends "apt"
 depends "sshd-service"
 depends "conjur-client"
+depends "yum"
 
 %w(ubuntu centos fedora).each do |platform|
   supports platform

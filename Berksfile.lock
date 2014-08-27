@@ -6,6 +6,9 @@ DEPENDENCIES
   sshd-service
     git: git@github.com:conjur-cookbooks/sshd-service.git
     revision: 37c963a2b1ee3cf7b826e82d8f4e385440deddbc
+  terminal-login
+    path: .
+    metadata: true
 
 GRAPH
   apt (2.3.10)
@@ -13,3 +16,9 @@ GRAPH
   conjur-client (0.3.0)
     build-essential (>= 0.0.0)
   sshd-service (1.0.0)
+  terminal-login (0.2.1)
+    apt (>= 0.0.0)
+    conjur-client (>= 0.0.0)
+    sshd-service (>= 0.0.0)
+    yum (>= 0.0.0)
+  yum (3.2.4)
