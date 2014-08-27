@@ -93,6 +93,7 @@ service 'logshipper' do
   provider Chef::Provider::Service::Upstart
 end
 
+command_line = "/usr/sbin/logshipper -n #{fifo_path} >> /var/log/logshipper.log 2>&1"
 # differentiate here the platform-specific parts
 
 # generic (tested on ubuntu)
@@ -103,7 +104,7 @@ upstart_script = %Q(
   setuid logshipper
   setgid conjur
 
-  exec /usr/sbin/logshipper -n #{fifo_path} >> /var/log/logshipper.log 2>&1
+  exec #{command_line}
 )
 
 # workarounds
@@ -115,7 +116,7 @@ when 'centos'
     stop on runlevel [016]
 
     # old upstart, no set[ug]id stanzas
-    exec runuser -s /bin/bash logshipper -g conjur -- -c /usr/sbin/logshipper -n #{fifo_path} >> /var/log/logshipper.log 2>&1
+    exec runuser -s /bin/bash logshipper -g conjur -- -c "#{command_line}"
   )
 end
 
