@@ -108,8 +108,8 @@ upstart_script = %Q(
 )
 
 # workarounds
-case node.platform
-when 'centos'
+case node.platform_family
+when 'rhel'
   upstart_script = %Q(
     # rsyslog isn't upstarted here
     start on (local-filesystems and net-device-up IFACE!=lo)
