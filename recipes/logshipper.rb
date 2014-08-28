@@ -25,6 +25,31 @@ end
 
 package 'logshipper'
 
+## selinux policy
+
+if node.platform == 'centos'
+  bash "semodule -i logshipper.pp" do
+    code <<-CODE
+      checkmodule -M -m -o logshipper.mod logshipper.te
+      semodule_package -o logshipper.pp -m logshipper.mod -f logshipper.fc
+      semodule -i logshipper.pp
+      [ -p /var/run/logshipper ] && restorecon /var/run/logshipper
+    CODE
+    cwd "/tmp"
+    action :nothing
+  end
+
+  cookbook_file "/tmp/logshipper.te" do
+    source "selinux/logshipper.te"
+    notifies :run, "bash[semodule -i logshipper.pp]"
+  end
+
+  cookbook_file "/tmp/logshipper.fc" do
+    source "selinux/logshipper.fc"
+    notifies :run, "bash[semodule -i logshipper.pp]"
+  end
+end
+
 ## create the group, user, fifo and logfile
 
 group "conjur"
@@ -35,7 +60,7 @@ user "logshipper" do
   group "conjur"
 end
 
-fifo_path = node.conjur.logshipper.fifo_path
+fifo_path = '/var/run/logshipper'
 if node.etc.group.include? 'syslog'
   fifo_group = 'syslog'
 else
