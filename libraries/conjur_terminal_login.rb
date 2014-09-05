@@ -68,7 +68,7 @@ module ConjurTerminalLogin
     
     def netrc
       require 'netrc'
-      netrc = Netrc.read('/root/.netrc')
+      netrc = Netrc.read(conjur_conf['netrc_path'] || '/root/.netrc')
       netrc["#{appliance_url}/authn"] || []
     end
     
