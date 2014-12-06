@@ -105,7 +105,7 @@ file "/etc/conjur.identity" do
 
   # the regex is to pick just the hostname
   content """
-    machine #{appliance_url[%r(^(?:.*//)?([^/]*)/?),1]}
+machine #{appliance_url}
     login host/#{host_id}
     password #{host_api_key}
   """
