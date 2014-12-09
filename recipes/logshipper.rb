@@ -103,9 +103,12 @@ file "/etc/conjur.identity" do
   group "conjur"
   # the details used here come from lib/conjur_terminal_login.rb
 
-  # the regex is to pick just the hostname
+  # there should be a regex is to pick just the hostname, ie.
+  # appliance_url[%r(^(?:.*//)?([^/]*)/?),1]
+  # but conjur-cli looks for the full url
+  # so appease it until it's fixed there
   content """
-machine #{appliance_url}
+machine #{appliance_url}/authn
     login host/#{host_id}
     password #{host_api_key}
   """
