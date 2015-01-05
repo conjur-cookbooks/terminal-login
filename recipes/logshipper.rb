@@ -52,7 +52,9 @@ end
 
 ## create the group, user, fifo and logfile
 
-group "conjur"
+group 'conjur' do
+  not_if 'egrep -i "^conjur" /etc/group'
+end
 
 user "logshipper" do
   system true
