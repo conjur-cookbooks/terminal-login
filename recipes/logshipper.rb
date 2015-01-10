@@ -54,7 +54,7 @@ end
 
 group 'conjur' do
   action :create
-  attribute 'append'
+  append true
 end
 
 user "logshipper" do
