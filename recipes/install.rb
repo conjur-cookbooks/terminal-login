@@ -1,5 +1,7 @@
 include_recipe "sshd-service"
 
+chef_gem 'netrc'
+
 # This is used to cURL the public keys service
 package "curl"
 

@@ -68,6 +68,11 @@ module ConjurTerminalLogin
     
     def netrc
       require 'netrc'
+      
+      Netrc.configure do |config|
+        config[:allow_permissive_netrc_file] = true
+      end
+      
       netrc = Netrc.read(conjur_conf['netrc_path'] || '/root/.netrc')
       netrc["#{appliance_url}/authn"] || []
     end
