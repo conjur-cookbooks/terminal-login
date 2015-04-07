@@ -104,6 +104,8 @@ end
 file "/etc/conjur.identity" do
   mode 0640
   group "conjur"
+  atomic_update false
+
   # the details used here come from lib/conjur_terminal_login.rb
 
   # there should be a regex is to pick just the hostname, ie.

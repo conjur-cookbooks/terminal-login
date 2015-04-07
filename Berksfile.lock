@@ -16,7 +16,7 @@ GRAPH
   conjur-client (0.3.0)
     build-essential (>= 0.0.0)
   sshd-service (1.0.0)
-  terminal-login (0.2.1)
+  terminal-login (0.2.4)
     apt (>= 0.0.0)
     conjur-client (>= 0.0.0)
     sshd-service (>= 0.0.0)

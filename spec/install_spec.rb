@@ -19,7 +19,7 @@ describe "terminal-login::install" do
       chef_run.node.automatic.platform_family = 'debian'
     }
     it "executes successfully" do
-      subject.should be_true
+      subject.should be_truthy
     end
     it "executes ubuntu scripts" do
       subject.should run_execute("pam-auth-update")
@@ -32,7 +32,7 @@ describe "terminal-login::install" do
       chef_run.node.automatic.platform_family = 'rhel'
     }
     it "executes successfully" do
-      subject.should be_true
+      subject.should be_truthy
     end
     it "executes centos scripts" do
       subject.should run_execute("authconfig")
